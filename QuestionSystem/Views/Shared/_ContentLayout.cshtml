@@ -1,0 +1,17 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/easylayoutcss")
+    @Scripts.Render("~/Content/defaultjq")
+    @Scripts.Render("~/Content/easylayoutjq")
+    <script src="~/Content/easyui/expandJs/jquery.edatagrid.js"></script>
+</head>
+<body>
+    <div>
+        @RenderBody()
+    </div>
+</body>
+</html>

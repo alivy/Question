@@ -1,0 +1,173 @@
+﻿@{
+    ViewBag.Title = "CetDate";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml";
+}
+<style type="text/css">
+    .form {
+        padding: 5px;
+        height: 50px;
+    }
+
+    .form_elem {
+        display: block;
+    }
+
+        .form_elem div {
+            padding: 5px;
+            float: left;
+        }
+
+    .detailall, .fullbid, .editall, .operateStart {
+        display: none;
+    }
+
+
+    .faileall {
+        display: none;
+    }
+</style>
+
+<div data-options="region:'north'" class="form">
+    <form class="form_elem">
+        @*<div>
+            姓名:<input type="text" name="userName" id="userName" class="easyui-textbox" style="width:150px;" />
+        </div>*@
+        <div>
+            <button type="button" id="search" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</button>
+            <button type="button" id="clear" class="easyui-linkbutton" data-options="iconCls:'icon-remove'">清空</button>
+        </div>
+    </form>
+</div>
+<div data-options="region:'center'">
+    <table id="dg"></table>
+</div>
+
+<div id="dlg" class="easyui-dialog" title="Basic Dialog">
+    <form class="from_prizeInfo">
+        <div style="display:none">
+            <input type="text" name="Id" id="Id" class="easyui-textbox" style="width:150px;" />
+        </div>
+        <div>
+            领取时间：<input id="getTime" name="getTime" type="text" style="width:150px;" class="easyui-datebox">
+        </div>
+    </form>
+</div>
+
+
+<script type="text/javascript">
+
+    $(function () {
+        $('#dlg').dialog({
+            title: '时间管理',
+            width: 400,
+            height: 460,
+            closed: true,
+            cache: false,
+            iconCls: 'icon-save',
+            //href: 'get_content.php',
+            modal: true,
+            buttons: [{
+                text: '提交',
+                iconCls: 'icon-ok',
+                handler: function () {
+                    var data = $(".from_prizeInfo").serializeArray();
+                    var obj = {};
+                    $.each(data, function () {
+                        obj[this.name] = this.value;
+                    });
+                    $.ajax({
+                        type: "Post",
+                        url: "/Question/AddCetDate",
+                        data: obj,
+                        async: false,
+                        success: function (res) {
+                            if (res.code == 0) {
+                                alert('执行成功');
+                                $('#dlg').dialog('close');
+                                $("#dg").datagrid("reload");
+                            } else {
+                                alert(res.msg);
+                            }
+                        }
+                    });
+                }
+            }, {
+                text: '取消',
+                handler: function () {
+                    $('#dlg').dialog('close');
+                }
+            }]
+        });
+    });
+
+    var columns = [[
+        { title: '全选', field: 'ck', checkbox: true, sortable: false, width: 100 },  //添加checkbox
+        { field: 'Id', title: '主键', width: 100, hidden: true },
+        { field: 'GetTime', title: '领取时间', width: 100 }
+    ]];
+
+    var toolbar = [{
+        iconCls: 'icon-remove',
+        text: '删除',
+        handler: function () {
+            var row = $("#dg").datagrid("getSelected");
+            if (!row) {
+                $.messager.alert("提示消息", "请选择要修改的数据");
+                return false;
+            }
+            handle = 1;
+            var obj = { "Id": row.Id };
+            $.ajax({
+                type: "Post",
+                url: "/Question/DelDate",
+                data: obj,
+                async: false,
+                success: function (res) {
+                    if (res.code == 0) {
+                        alert('删除成功');
+                        $("#dg").datagrid("reload");
+                    } else {
+                        alert(res.msg);
+                    }
+                }
+            });
+        }
+    }, '-', {
+        iconCls: 'icon-add',
+        text: '增加',
+        handler: function () {
+            $('#dlg').dialog('open');
+        }
+    }];
+
+
+    $('#dg').datagrid({
+        url: '/Question/CetPrizeDate',
+        columns: columns,
+        height: 'auto',
+        //data: dataJson,
+        striped: true, //设置为 true，则把行条纹化。（即奇偶行使用不同背景色）
+        toolbar: toolbar,
+        fitColumns: true,
+        idField: "Id",
+        singleSelect: true, //设置为 true，则只允许选中一行。
+        rownumbers: true,//设置为 true，则显示带有行号的列
+        checkbox: true, //设置为 true，则显示复选框
+        checkOnSelect: true, //如果设置为 true，当用户点击某一行时，则会选中/ 取消选中复选框checkbox
+        loadMsg: "正在加载数据中...",
+        pagination: true,//分页控件
+        rownumbers: true,
+        pageSize: 5,
+        pageList: [5, 10, 20],
+        onDblClickCell: function (index, field, value) {
+            $('#dg').editRow(index);
+        }
+    });
+    //当分页时运行
+    var pager = $("#dg").datagrid("getPager");
+    pager.pagination({
+        beforePageText: '第',//页数文本框前显示的汉字
+        afterPageText: '页    共 {pages} 页',
+        displayMsg: '第{from}到{to}条，共{total}条',
+    });
+</script>

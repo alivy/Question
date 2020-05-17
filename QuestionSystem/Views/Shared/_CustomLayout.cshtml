@@ -1,0 +1,152 @@
+﻿<!--此页为自定义母版页-->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <!--<meta name="viewport" content="width=device-width" />-->
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/easylayoutcss")
+    <style type="text/css">
+        body {
+            font-family: verdana,helvetica,arial,sans-serif;
+            padding: 20px;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+            margin-bottom: 15px;
+        }
+
+        .demo-info {
+            padding: 0 0 12px 0;
+        }
+
+        .demo-tip {
+            display: none;
+        }
+
+        .label-top {
+            display: block;
+            height: 22px;
+            line-height: 22px;
+            vertical-align: middle;
+        }
+    </style>
+    @Scripts.Render("~/Content/defaultjq")
+    @Scripts.Render("~/Content/easylayoutjq")
+</head>
+<body class="easyui-layout">
+
+    <div data-options="region:'north',border:false" style="height:60px;background:#B3DFDA;padding:10px">
+        <!--此处顶部占位符-->
+        <div style="margin:5px 0;">
+            <a href="javascript:;" class="easyui-linkbutton" onclick="toggle()">折叠菜单</a>
+        </div>
+    </div>
+
+    <div data-options="region:'west',split:true,title:'导航'" style="width:208px;padding:0px;">
+        <!--此处为菜单占位符-->
+        <div id="sm" class="easyui-sidemenu" data-options="data:data"></div>
+    </div>
+
+    <div data-options="region:'east',split:true,collapsed:true,title:'East'" style="width:100px;padding:10px;">
+        右侧布局
+    </div>
+
+
+    <div data-options="region:'south',border:false" style="height:50px;background:#A9FACD;padding:10px;">
+        <!--此处为页脚占位符-->
+        @RenderPage("_CustomPartial.cshtml")
+    </div>
+
+    <div data-options="region:'center'">
+        <div id="tt" class="easyui-tabs" data-options="tools:'#tab-tools'" style="width:700px;height:250px"></div>
+        <div id="tab-tools">
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'" onclick="addPanel()"></a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-remove'" onclick="removePanel()"></a>
+        </div>
+
+        <!--此处为内容页占位符-->
+        @RenderBody()
+    </div>
+
+    <!--配置全局页面加载完加载页面js顺序-->
+    <!-- RenderSection("SectionContent", false) -->
+    @RenderSection("scripts", required: false)
+    @Styles.Render("~/Content/expandcss")
+
+    <!--配置菜单js-->
+    <script type="text/javascript">
+
+        var index = 0;
+        function addPanel() {
+            index++;
+            $('#tt').tabs('add', {
+                title: 'Tab' + index,
+                content: '<div style="padding:10px">Content' + index + '</div>',
+                closable: true
+            });
+        }
+
+        function removePanel() {
+            var tab = $('#tt').tabs('getSelected');
+            if (tab) {
+                var index = $('#tt').tabs('getTabIndex', tab);
+                $('#tt').tabs('close', index);
+            }
+        }
+
+        var data = [{
+            text: '一级菜单',
+            iconCls: 'fa fa-wpforms',
+            state: 'open',
+            children: [{
+                text: '二级子菜单'
+            }, {
+                text: '二级子菜单'
+            }, {
+                text: '二级子菜单'
+            }]
+        }, {
+            text: 'Mail',
+            iconCls: 'fa fa-at',
+            selected: true,
+            children: [{
+                text: '二级子菜单'
+            }, {
+                text: '二级子菜单'
+            }, {
+                text: '二级父菜单',
+                children: [{
+                    text: '三级子菜单'
+                }, {
+                    text: '三级子菜单'
+                }]
+            }]
+        }, {
+            text: 'Layout',
+            iconCls: 'fa fa-table',
+            children: [{
+                text: '二级子菜单'
+            }, {
+                text: '二级子菜单'
+            }, {
+                text: '二级子菜单'
+            }]
+        }];
+
+        function toggle() {
+            var opts = $('#sm').sidemenu('options');
+            $('#sm').sidemenu(opts.collapsed ? 'expand' : 'collapse');
+            opts = $('#sm').sidemenu('options');
+            $('#sm').sidemenu('resize', {
+                width: opts.collapsed ? 60 : 200
+            })
+        }
+    </script>
+</body>
+</html>

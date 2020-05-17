@@ -1,0 +1,234 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml";
+}
+
+<style type="text/css">
+    .form {
+        padding: 5px;
+        height: 50px;
+    }
+
+    .form_elem {
+        display: block;
+    }
+
+        .form_elem div {
+            padding: 5px;
+            float: left;
+        }
+
+    .detailall, .fullbid, .editall, .operateStart {
+        display: none;
+    }
+
+
+    .faileall {
+        display: none;
+    }
+</style>
+
+<div data-options="region:'north'" class="form">
+    <form class="form_elem">
+        <div>
+            姓名:<input type="text" name="userName" id="userName" class="easyui-textbox" style="width:150px;" />
+        </div>
+        <div>
+            领取时间：<input id="getTime" name="getTime" type="text" style="width:150px;" class="easyui-datebox">
+        </div>
+        <div>
+            提交时间：<input id="submitTime" name="submitTime" type="text" style="width:150px;" class="easyui-datebox">
+        </div>
+
+        <div>
+            <button type="button" id="search" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</button>
+            <button type="button" id="clear" class="easyui-linkbutton" data-options="iconCls:'icon-remove'">清空</button>
+        </div>
+    </form>
+</div>
+<div data-options="region:'center'">
+    <table id="dg"></table>
+</div>
+
+
+<div id="dlg" class="easyui-dialog" title="Basic Dialog">
+    <form class="from_prizeInfo">
+        <div style="display:none">
+            <input type="text" name="Id" id="Id" class="easyui-textbox" style="width:150px;" />
+        </div>
+        <div style="display:none">
+            订单编号:<input type="text" name="OrderId" id="OrderId" class="easyui-textbox" style="width:150px;" />
+        </div>
+        <br />
+        <div>
+            奖品名称:<input type="text" name="PrizeName" id="PrizeName" class="easyui-textbox" style="width:150px;" />
+        </div>
+        <br />
+        <div>
+            奖品库存数量:<input type="text" name="PrizeNum" id="PrizeNum" class="easyui-textbox" style="width:150px;" />
+        </div>
+        <br />
+        <div>
+            奖品兑换积分:<input type="text" name="PrizeScore" id="PrizeScore" class="easyui-textbox" style="width:150px;" />
+        </div>
+        <br />
+        <div>
+            奖品图片地址:<img id="thePrizeImg" name="thePrizeImg" style="width:150px;height:150px" />
+        </div>
+        <div style="display:none">
+            <input style="display:none" type="text" name="PrizeImg" id="PrizeImg" class="easyui-textbox" />
+        </div>
+        <input type="file" name="fileName" id="f1" />
+        <button type="button" id="submitPize">上传</button>
+    </form>
+</div>
+
+
+
+<script type="text/javascript">
+    var handle = 1;
+
+    $(function () {
+        $('#dlg').dialog({
+            title: '题目信息',
+            width: 400,
+            height: 460,
+            closed: true,
+            cache: false,
+            iconCls: 'icon-save',
+            //href: 'get_content.php',
+            modal: true,
+            buttons: [{
+                text: '提交',
+                iconCls: 'icon-ok',
+                handler: function () {
+                    SubmitPrize(handle);
+                }
+            }, {
+                text: '取消',
+                handler: function () {
+                    $('#dlg').dialog('close');
+                }
+            }]
+        });
+    });
+
+
+    $("#search").click(function () {
+        var data = $(".form_elem").serializeArray();
+        var obj = {};
+        $.each(data, function () {
+            obj[this.name] = this.value;
+        });
+        //var startTime = $("#getTime").datebox('getValue');
+        //var endTime = $("#submitTime").datebox('getValue');
+        $("#dg").datagrid("reload", obj);
+        return false;
+    });
+
+
+    $("#clear").click(function () {
+        $(".form_elem .easyui-textbox").textbox("clear");
+        $(".form_elem select").combobox("clear");
+        return false;
+    });
+
+    var columns = [[
+        { title: '全选', field: 'ck', checkbox: true, sortable: false, width: 100 },  //添加checkbox
+        { field: 'Id', title: '主键', width: 100, hidden: true },
+        { field: 'OrderId', title: '订单编号', width: 100 },
+        { field: 'PrizeName', title: '奖品名称', width: 100 },
+        { field: 'Phone', title: '电话', width: 100 },
+        { field: 'UserName', title: '用户名', width: 100 },
+        { field: 'PrizeCount', title: '领取数量', width: 100 },
+        { field: 'GetTime', title: '预约领取时间', width: 100 },
+        { field: 'SubmitTime', title: '提交时间', width: 100 }
+    ]];
+
+    var toolbar = [
+        //{
+        //    iconCls: 'icon-edit',
+        //    text: '修改',
+        //    handler: function () {
+        //        var row = $('#dg').datagrid('getSelected');
+
+        //    }
+        //}, '-', {
+        //    iconCls: 'icon-add',
+        //    text: '增加',
+        //    handler: function () {
+        //        // $('#dg').edatagrid('addRow');
+        //        $('#dg').datagrid('insertRow', {
+        //            index: 0,	// index start with 0
+        //            row: {
+        //                code: '',
+        //                name: '',
+        //                price: ''
+        //            }
+        //        });
+        //    }
+        //}, '-',
+        {
+            iconCls: 'icon-save',
+            text: '保存excel',
+            handler: function () {
+                var userName = $('#userName').val();
+                var getTime = $("#getTime").datebox('getValue');
+                var submitTime = $("#submitTime").datebox('getValue');
+                download("提交订单报表.xls", userName, getTime, submitTime);
+            }
+        }];
+
+
+    $('#dg').datagrid({
+        url: '/Question/GetOrder',
+        columns: columns,
+        height: 'auto',
+        //data: dataJson,
+        striped: true, //设置为 true，则把行条纹化。（即奇偶行使用不同背景色）
+        toolbar: toolbar,
+        fitColumns: true,
+        idField: "Id",
+        singleSelect: true, //设置为 true，则只允许选中一行。
+        rownumbers: true,//设置为 true，则显示带有行号的列
+        checkbox: true, //设置为 true，则显示复选框
+        checkOnSelect: true, //如果设置为 true，当用户点击某一行时，则会选中/ 取消选中复选框checkbox
+        loadMsg: "正在加载数据中...",
+        pagination: true,//分页控件
+        rownumbers: true,
+        pageSize: 5,
+        //queryParams: {},
+        pageList: [5, 10, 20],
+        onDblClickCell: function (index, field, value) {
+            $('#dg').editRow(index);
+        }
+    });
+    //当分页时运行
+    var pager = $("#dg").datagrid("getPager");
+    pager.pagination({
+        beforePageText: '第',//页数文本框前显示的汉字
+        afterPageText: '页    共 {pages} 页',
+        displayMsg: '第{from}到{to}条，共{total}条',
+    });
+
+    function download(filename, userName, getTime, submitTime) {
+        var oReq = new XMLHttpRequest();
+        oReq.open("GET", "/Question/CreateOrderExcel?userName=" + userName + "&getTime" + getTime + "&submitTime=" + submitTime, true);
+        oReq.responseType = "blob";
+        oReq.onload = function (oEvent) {
+            var content = oReq.response;
+            var elink = document.createElement('a');
+            elink.download = filename;
+            elink.style.display = 'none';
+            var blob = new Blob([content]);
+            elink.href = URL.createObjectURL(blob);
+
+            document.body.appendChild(elink);
+            elink.click();
+            document.body.removeChild(elink);
+        };
+        oReq.send();
+    }
+</script>
+

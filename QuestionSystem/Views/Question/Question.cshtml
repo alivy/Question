@@ -1,0 +1,302 @@
+﻿
+@{
+    ViewBag.Title = "Prize";
+    Layout = "~/Views/Shared/_ContentLayout.cshtml";
+}
+<style type="text/css">
+    .form {
+        padding: 5px;
+        height: 50px;
+    }
+
+    .form_elem {
+        display: block;
+    }
+
+        .form_elem div {
+            padding: 5px;
+            float: left;
+        }
+
+    .detailall, .fullbid, .editall, .operateStart {
+        display: none;
+    }
+
+
+    .faileall {
+        display: none;
+    }
+</style>
+
+<div data-options="region:'north'" class="form">
+    <form class="form_elem">
+        <div>
+            题目名称:<input type="text" name="qcontent" id="qcontent" class="easyui-textbox" style="width:150px;" />
+        </div>
+
+        <div>
+            <button type="button" id="search" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</button>
+            <button type="button" id="clear" class="easyui-linkbutton" data-options="iconCls:'icon-remove'">清空</button>
+        </div>
+    </form>
+</div>
+<div data-options="region:'center'">
+    <table id="dg"></table>
+</div>
+
+<div id="dlg" class="easyui-dialog" title="Basic Dialog">
+    <form class="from_prizeInfo">
+        <div style="display:none">
+            <input type="text" name="QuestionId" id="QuestionId" class="easyui-textbox" style="width:150px;" />
+        </div>
+        <div>
+            题目内容:<input type="text" name="QuestionContent" id="QuestionContent" class="easyui-textbox" style="width:150px;" />
+        </div>
+        <br />
+        <div>
+            题目答案:<input type="text" name="Answer" id="Answer" class="easyui-textbox" style="width:150px;" />
+        </div>
+        <br />
+        <div>
+            题目分数:<input type="text" name="Score" id="Score" class="easyui-textbox" style="width:150px;" />
+        </div>
+        <br />
+        <div>
+            题目关卡:<input type="text" name="Censorship" id="Censorship" class="easyui-textbox" style="width:150px;" />
+        </div>
+        <br />
+        <div>
+            题目选项:<input type="text" name="QuestionOption" id="QuestionOption" class="easyui-textbox" style="width:150px;" />
+        </div>
+        <br />
+
+        <br />
+        <div>
+            奖品图片地址:<img id="thePrizeImg" name="thePrizeImg" style="width:150px;height:150px" />
+        </div>
+        <div style="display:none">
+            <input style="display:none" type="text" name="ImgPath" id="ImgPath" class="easyui-textbox" />
+        </div>
+        <input type="file" name="fileName" id="f1" />
+        <button type="button" id="submitPize">上传</button>
+    </form>
+</div>
+
+
+
+
+
+
+
+<script type="text/javascript">
+    var handle = 1;
+
+    $(function () {
+        $('#dlg').dialog({
+            title: '题目信息',
+            width: 400,
+            height: 600,
+            closed: true,
+            cache: false,
+            iconCls: 'icon-save',
+            //href: 'get_content.php',
+            modal: true,
+            buttons: [{
+                text: '提交',
+                iconCls: 'icon-ok',
+                handler: function () {
+                    SubmitPrize(handle);
+                }
+            }, {
+                text: '取消',
+                handler: function () {
+                    $('#dlg').dialog('close');
+                }
+            }]
+        });
+    });
+
+    $('#submitPize').click(function () {
+        var formData = new FormData();
+        var file = document.getElementById("f1").files[0];
+        formData.append("fileInfo", file);
+        formData.append("Id", 1);
+        $.ajax({
+            url: "/Question/PrizeUploadFile",
+            type: "POST",
+            data: formData,
+            async: false,
+            contentType: false,//必须false才会自动加上正确的Content-Type
+            processData: false,//必须false才会避开jQuery对 formdata 的默认处理，XMLHttpRequest会对 formdata 进行正确的处理
+            success: function (data) {
+                if (data.code == 0) {
+                    $("#ImgPath").textbox('setValue', data.Url);
+                    $("#thePrizeImg").attr('src', data.Url);
+                    alert("上传成功");
+                }
+                else {
+                    alert("上传失败");
+                }
+            }
+        });
+    });
+
+    //传1修改，传2新增
+    function SubmitPrize(handle) {
+        var data = $(".from_prizeInfo").serializeArray();
+        var obj = {};
+        $.each(data, function () {
+            obj[this.name] = this.value;
+        });
+        var url = "";
+        if (handle == 1) {
+            url = "/Question/EditQuestion";
+        } else {
+            url = "/Question/AddQuestion";
+        };
+        $.ajax({
+            type: "Post",
+            url: url,
+            data: obj,
+            async: false,
+            success: function (res) {
+                if (res.code == 0) {
+                    alert('执行成功');
+                    $('#dlg').dialog('close');
+                    dgRefresh();
+                } else {
+                    alert(res.msg);
+                }
+            }
+        });
+    };
+
+
+    $("#search").click(function () {
+        var data = $(".form_elem").serializeArray();
+        var obj = {};
+        $.each(data, function () {
+            obj[this.name] = this.value;
+        });
+        $("#dg").datagrid("reload", obj);
+        return false;
+    });
+
+
+    $("#clear").click(function () {
+        $(".form_elem .easyui-textbox").textbox("clear");
+        $(".form_elem select").combobox("clear");
+        return false;
+    });
+
+    var columns = [[
+        { title: '全选', field: 'ck', checkbox: true, sortable: false, width: 100 },  //添加checkbox
+        { field: 'QuestionId', title: '主键', width: 100, },// hidden: true
+        { field: 'QuestionContent', title: '题目内容', width: 100 },
+        { field: 'ImgPath', title: '奖品图片地址', width: 100 },
+        { field: 'Answer', title: '答案', width: 100 },
+        { field: 'Score', title: '题目分数', width: 100 },
+        { field: 'Censorship', title: '题目关卡', width: 100 },
+        { field: 'QuestionOption', title: '题目选项（#代表一个选项）', width: 100 },
+    ]];
+
+    var toolbar = [{
+        iconCls: 'icon-edit',
+        text: '修改',
+        handler: function () {
+            var row = $("#dg").datagrid("getSelected");
+            if (!row) {
+                $.messager.alert("提示消息", "请选择要修改的数据");
+                return false;
+            }
+            handle = 1;
+            $("#QuestionId").textbox('setValue', row.QuestionId);
+            $('#QuestionContent').textbox('setValue', row.QuestionContent);
+            $("#ImgPath").textbox('setValue', row.ImgPath);
+            $("#thePrizeImg").attr('src', row.ImgPath);
+            $("#Answer").textbox('setValue', row.Answer);
+            $("#Score").textbox('setValue', row.Score);
+            $("#QuestionOption").textbox('setValue', row.QuestionOption);
+            $("#Censorship").textbox('setValue', row.Censorship);
+            $('#dlg').dialog('open');
+        }
+    }, '-', {
+        iconCls: 'icon-add',
+        text: '增加',
+        handler: function () {
+            $(".from_prizeInfo .easyui-textbox").textbox("clear");
+            $(".from_prizeInfo select").combobox("clear");
+            $("#ImgPath").attr('src', "");
+            handle = 2;
+            $('#dlg').dialog('open');
+        }
+    }, '-', {
+        iconCls: 'icon-remove',
+        text: '删除',
+        handler: function () {
+            var row = $("#dg").datagrid("getSelected");
+            if (!row) {
+                $.messager.alert("提示消息", "请选择要修改的数据");
+                return false;
+            }
+            handle = 1;
+            var obj = { "Id": row.QuestionId };
+            $.ajax({
+                type: "Post",
+                url: "/Question/Delquestion",
+                data: obj,
+                async: false,
+                success: function (res) {
+                    if (res.code == 0) {
+                        alert('删除成功');
+                        dgRefresh();
+                    } else {
+                        alert(res.msg);
+                    }
+                }
+            });
+        }
+    }];
+
+    ///刷新datagrid
+    function dgRefresh() {
+        var data = $(".form_elem").serializeArray();
+        var obj = {};
+        $.each(data, function () {
+            obj[this.name] = this.value;
+        });
+        $("#dg").datagrid("reload", obj);
+    }
+
+
+    $('#dg').datagrid({
+        url: '/Question/CetQuestion',
+        columns: columns,
+        height: 'auto',
+        //data: dataJson,
+        striped: true, //设置为 true，则把行条纹化。（即奇偶行使用不同背景色）
+        toolbar: toolbar,
+        fitColumns: true,
+        idField: "Id",
+        singleSelect: true, //设置为 true，则只允许选中一行。
+        rownumbers: true,//设置为 true，则显示带有行号的列
+        checkbox: true, //设置为 true，则显示复选框
+        checkOnSelect: true, //如果设置为 true，当用户点击某一行时，则会选中/ 取消选中复选框checkbox
+        loadMsg: "正在加载数据中...",
+        pagination: true,//分页控件
+        rownumbers: true,
+        pageSize: 5,
+        pageList: [5, 10, 20],
+        onDblClickCell: function (index, field, value) {
+            $('#dg').editRow(index);
+        }
+    });
+
+    //当分页时运行
+    var pager = $("#dg").datagrid("getPager");
+    pager.pagination({
+        beforePageText: '第',//页数文本框前显示的汉字
+        afterPageText: '页    共 {pages} 页',
+        displayMsg: '第{from}到{to}条，共{total}条',
+    });
+</script>

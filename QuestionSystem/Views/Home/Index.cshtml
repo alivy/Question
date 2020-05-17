@@ -1,0 +1,43 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+    Layout = null;
+}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    @Styles.Render("~/Content/easylayoutcss")
+    @Styles.Render("~/Content/expandcss")
+    <link href="~/Content/ViewCss/Home/Index.css" rel="stylesheet" />
+    @Scripts.Render("~/Content/defaultjq")
+    @Scripts.Render("~/Content/easylayoutjq")
+    <script src="~/Content/ViewJquery/HomeJs/index.js"></script>
+</head>
+<body class="easyui-layout" fit="true" scroll="no">
+
+    <div data-options="region:'north',border:false" style="height:60px;background:#B3DFDA;padding:10px" >
+        <!--此处顶部占位符-->
+        <div style="margin:5px 0;">
+            <a href="javascript:;" class="easyui-linkbutton" onclick="toggle()">折叠菜单</a>
+        </div>
+    </div>
+
+    <div data-options="region:'west',split:true,title:'导航'" style="width:208px;padding:0px;">
+        <!--此处为菜单占位符-->
+        <div id="sm" class="easyui-sidemenu" data-options="data:data"></div>
+    </div>
+
+    <div data-options="region:'south',border:false" style="height:50px;background:#A9FACD;padding:10px;">
+        <!--此处为页脚占位符-->
+        @RenderPage("_FooterPartial.cshtml")
+    </div>
+
+    <div data-options="region:'center'" region="center" id="mainPanle" style="background: #eee; overflow-y:hidden">
+        <div id="tabs" class="easyui-tabs" fit="true" border="false">
+            <div title="我的桌面" style="overflow:hidden;" id="home"></div>
+        </div>
+    </div>
+
+    <div id="w"></div>
+</body>
+</html>
+
